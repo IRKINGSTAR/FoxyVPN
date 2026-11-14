@@ -1,5 +1,4 @@
-// Package logx is a port of the Android AppLogger: an in-memory ring buffer
-// of log entries with automatic secret redaction and a subscribable state.
+// In-memory log buffer with secret redaction.
 package logx
 
 import (
@@ -52,7 +51,7 @@ var (
 	watchers []chan []Entry
 )
 
-// Redaction patterns mirror AppLogger.kt.
+// secret redaction patterns.
 var (
 	accessTokenRe  = regexp.MustCompile(`(?i)(access_token[":=\s]+)[A-Za-z0-9_\-\.]+`)
 	refreshTokenRe = regexp.MustCompile(`(?i)(refresh_token[":=\s]+)[A-Za-z0-9_\-\.]+`)

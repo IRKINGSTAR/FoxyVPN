@@ -1,6 +1,4 @@
-// Package remoteconfig is a port of FoxyRemoteConfig.kt: live headers,
-// user agents and protocol preferences pulled from the FoxyConfig repository
-// with CDN redundancy (GitHub Raw + jsDelivr) and offline caching.
+// Remote header/UA config fetched from the FoxyConfig repo.
 package remoteconfig
 
 import (
@@ -69,7 +67,7 @@ const (
 
 var placeholderRe = regexp.MustCompile(`(?i)\$?\{android_version\}|\$?\{os_version\}|\$?\{android_sdk\}`)
 
-// ResolvePlaceholders mirrors resolvePlaceholders() in FoxyRemoteConfig.kt.
+// ResolvePlaceholders fills the UA template variables.
 func ResolvePlaceholders(raw string) string {
 	return placeholderRe.ReplaceAllStringFunc(raw, func(m string) string {
 		lower := strings.ToLower(m)

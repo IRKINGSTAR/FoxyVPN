@@ -1,7 +1,5 @@
-// Package service is the Windows port of FoxyVpnService.kt: the connection
-// state machine that mints Guardian proxy passes, builds the sing-box config,
-// runs the core in-process, rotates bearer tokens before expiry, and performs
-// bounded automatic recovery.
+// Connection state machine around the sing-box core: proxy pass minting and
+// rotation, health checks, and bounded recovery.
 package service
 
 import (
@@ -181,9 +179,7 @@ func (s *Service) Subscribe(fn func(Snapshot)) (cancel func()) {
 	}
 }
 
-// goSafe runs fn in a goroutine that converts panics into logged errors —
-// an unrecovered panic in any background goroutine kills the whole process
-// (and with the GUI subsystem the stack is invisible).
+// goSafe runs fn in a goroutine, converting panics into logged errors.
 func (s *Service) goSafe(name string, fn func()) {
 	go func() {
 		defer func() {
@@ -320,7 +316,7 @@ func (s *Service) friendlyError(err error) string {
 	return "Connection failed"
 }
 
-// credentialDeadline ports CredentialDeadline.kt (lifetime capped at 5 min).
+// credential deadline: lifetime capped at 5 minutes.
 func credentialDeadline(expirySeconds *int64, now time.Time) time.Time {
 	lifetime := maxCredentialLifetime
 	if expirySeconds != nil {
@@ -351,7 +347,7 @@ func validateProxyPass(pass guardian.ProxyPass) error {
 	return nil
 }
 
-// PortsAvailable mirrors ListenerAvailability.requireAvailable.
+// PortsAvailable checks that the listeners are free.
 func PortsAvailable(ports ...int) error {
 	for _, p := range ports {
 		ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", p))
@@ -505,7 +501,7 @@ func (s *Service) failConnect(err error, wasRecovery bool) {
 	s.teardown()
 }
 
-// mintProxyPass ports the nested mintProxyPass() of FoxyVpnService.connect().
+// mintProxyPass fetches a fresh Guardian proxy pass with token fallbacks.
 func (s *Service) mintProxyPass() (guardian.ProxyPass, error) {
 	auth, err := s.repo.EnsureFreshAccessToken(false)
 	if err != nil {
@@ -592,12 +588,11 @@ func (s *Service) saveQuota(pass guardian.ProxyPass) {
 			st.CachedQuotaMax = pass.QuotaMax
 		}
 	})
-	// Quota changes arrive on renewals (~every 5 min) — surface them to
-	// the GUI or the usage bar stays frozen for the whole session.
+	// refresh the usage bar after quota updates
 	s.notify()
 }
 
-// resolveCandidate ports resolveConnectCandidate: region selection.
+// resolveCandidate picks a server from the saved region.
 func (s *Service) resolveCandidate() (model.ProxyCandidate, error) {
 	d := s.cfg.Get()
 	var saved *model.ProxyCandidate
@@ -800,9 +795,7 @@ func (s *Service) connectOnce(candidate *model.ProxyCandidate) error {
 	if err != nil {
 		return err
 	}
-	// The fork requires the bearer token to be installed in the global
-	// registry before the config is parsed (mirrors Libbox.setBearerToken
-	// before startOrReloadService on Android).
+	// install the bearer token before parsing the config
 	libbox.SetBearerToken(pass.Token)
 	if err := libbox.CheckConfig(configContent); err != nil {
 		libbox.SetBearerToken("")
@@ -840,8 +833,7 @@ func (s *Service) connectOnce(candidate *model.ProxyCandidate) error {
 
 	// Proxy-only mode: optionally point the Windows system proxy at the
 	// local listener so browsers follow without manual configuration.
-	// (Only when not already applied — recovery reconnects must not treat
-	// our own proxy as the previous configuration.)
+	// (skip on recovery reconnects)
 	if d.ProxyOnlyMode && d.EffectiveSystemProxy() {
 		s.mu.Lock()
 		alreadyApplied := s.sysProxyBackup != nil
@@ -910,7 +902,7 @@ func remoteconfigRefresh() {
 	}()
 }
 
-// ---- credential renewal (port of startProxyPassRenewal + expiry watchdog) ----
+// ---- credential renewal + expiry watchdog ----
 
 func (s *Service) startCredentialRenewal(gen int, deadline time.Time) {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -1088,8 +1080,7 @@ func (s *Service) startTrafficReader(gen int) {
 					changed = true
 				}
 				s.mu.Unlock()
-				// Push live rates to the GUI about once a second — the
-				// frontend only sees values through snapshot events.
+				// push rates to the GUI ~1/sec
 				if changed && time.Since(lastNotify) >= 500*time.Millisecond {
 					lastNotify = time.Now()
 					s.notify()
@@ -1105,7 +1096,7 @@ func (s *Service) startTrafficReader(gen int) {
 	})
 }
 
-// ---- health monitor + bounded recovery (port of startHealthMonitor) ----
+// ---- health monitor + bounded recovery ----
 
 var healthProbeURLs = []string{
 	"https://www.gstatic.com/generate_204",
@@ -1130,8 +1121,7 @@ func healthLoop(s *Service, gen int) {
 		creds := s.creds.Get()
 		s.mu.Unlock()
 
-		// The probe doubles as the latency measurement for the ping chip,
-		// so it runs immediately after connect, then every 60s.
+		// probe = health check + ping sample, right after connect
 		healthy := false
 		latency := 0
 		latencyOk := false

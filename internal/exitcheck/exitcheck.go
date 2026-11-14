@@ -1,5 +1,4 @@
-// Package exitcheck is a port of ExitCheck.kt and PingUtil.kt: verifies the
-// observed exit IP through the local proxy and measures proxy latency.
+// Exit-IP verification and latency probes through the local proxy.
 package exitcheck
 
 import (
@@ -114,8 +113,7 @@ func parseTrace(body string) (IpLocationInfo, error) {
 	return IpLocationInfo{IP: ip, CountryCode: loc}, nil
 }
 
-// MeasureProxyLatencyMs ports PingUtil.measureProxyLatencyMs: a simple HEAD
-// request through the local proxy, returning round-trip milliseconds.
+// MeasureProxyLatencyMs: round trip of a GET through the local proxy.
 func MeasureProxyLatencyMs(socksPort int, probeURL, username, password string) (int, bool) {
 	if !settings.IsValidProbeURL(probeURL) && !strings.HasPrefix(probeURL, "https://") {
 		return 0, false

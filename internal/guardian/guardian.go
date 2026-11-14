@@ -1,6 +1,4 @@
-// Package guardian is a port of GuardianClient.kt: fetches the short-lived
-// proxy pass (JWT) that authenticates the MASQUE tunnel, plus entitlement
-// and quota information.
+// Guardian API client: proxy pass issuance, entitlement and quota.
 package guardian
 
 import (
@@ -50,7 +48,7 @@ type TokenInvalid struct{ Msg string }
 
 func (e *TokenInvalid) Error() string { return e.Msg }
 
-// ProxyPass mirrors the Kotlin data class.
+// ProxyPass as returned by /fpn/token.
 type ProxyPass struct {
 	Token                string `json:"-"`
 	ExpiresAtEpochSeconds *int64 `json:"-"`
@@ -118,7 +116,7 @@ func retryAfterMs(h *http.Header) *int64 {
 	return nil
 }
 
-// FetchProxyPass ports fetchProxyPass.
+// FetchProxyPass gets a fresh proxy pass JWT.
 func (c *Client) FetchProxyPass(endpoint, accessToken string) (ProxyPass, error) {
 	u := strings.TrimSuffix(endpoint, "/") + "/api/v1/fpn/token"
 	resp, err := c.authorizedRequest("GET", u, accessToken)
@@ -168,7 +166,7 @@ func (c *Client) FetchProxyPass(endpoint, accessToken string) (ProxyPass, error)
 	}, nil
 }
 
-// FetchUserInfo ports fetchUserInfo (entitlement from pass + status).
+// FetchUserInfo combines the pass and status endpoints.
 func (c *Client) FetchUserInfo(endpoint, accessToken string) (model.Entitlement, error) {
 	var pass *ProxyPass
 	var quotaExceeded *QuotaExceeded
@@ -236,7 +234,7 @@ func (c *Client) FetchUserInfo(endpoint, accessToken string) (model.Entitlement,
 	return model.Entitlement{MaxBytes: maxBytes, LimitedBandwidth: limited, QuotaRemaining: remaining}, nil
 }
 
-// ActivateGuardian ports activateGuardian.
+// ActivateGuardian enables the Guardian entitlement.
 func (c *Client) ActivateGuardian(endpoint, accessToken string) (model.Entitlement, error) {
 	u := strings.TrimSuffix(endpoint, "/") + "/api/v1/fpn/activate"
 	resp, err := c.authorizedRequest("POST", u, accessToken)
@@ -356,7 +354,7 @@ func (c *Client) authorizedRequest(method, rawURL, accessToken string) (*http.Re
 
 func int64Ptr(v int64) *int64 { return &v }
 
-// JWTExpiryEpochSeconds ports jwtExpiryEpochSeconds.
+// JWTExpiryEpochSeconds parses exp from the proxy pass JWT.
 func JWTExpiryEpochSeconds(token string) *int64 { return jwtExpiryEpochSeconds(token) }
 
 func jwtExpiryEpochSeconds(token string) *int64 {

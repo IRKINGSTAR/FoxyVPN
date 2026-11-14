@@ -1,5 +1,4 @@
-// Package settings is a port of SettingsStore.kt: all user settings with the
-// same defaults and validation rules, persisted as JSON on disk.
+// User settings store: JSON on disk with Android-compatible defaults.
 package settings
 
 import (
@@ -368,7 +367,7 @@ func (s *Store) Update(mutate func(*Stored)) error {
 	return s.Save()
 }
 
-// ---- effective values (ports of the Kotlin computed properties) ----
+// ---- effective values ----
 
 func (d Stored) EffectiveDohURL() string {
 	switch d.DNSProvider {
@@ -405,7 +404,7 @@ func (d Stored) EffectiveSystemProxy() bool {
 	return d.SystemProxy == nil || *d.SystemProxy
 }
 
-// ---- validation (ports of SettingsStore companion) ----
+// ---- validation ----
 
 func IsValidIPv4(value string) bool {
 	octets := strings.Split(value, ".")

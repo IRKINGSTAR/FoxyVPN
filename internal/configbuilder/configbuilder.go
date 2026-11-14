@@ -1,7 +1,5 @@
-// Package configbuilder is a port of SingBoxConfigBuilder.kt: it builds the
-// sing-box JSON configuration for the FoxyVPN MASQUE connection, using the
-// fork's dynamic_bearer_token outbound. Split tunneling uses process_name
-// route rules (Windows equivalent of Android package matching).
+// sing-box config builder for the FoxyVPN tunnel (fork outbound with
+// dynamic bearer token). Split tunneling uses process_name rules.
 package configbuilder
 
 import (

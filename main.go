@@ -36,10 +36,8 @@ func main() {
 	}
 	defer winutil.ReleaseSingleInstance()
 
-	// The main window only serves local assets; pin its WebView2 to a direct
-	// connection so that applying/restoring the Windows system proxy (proxy
-	// mode) can never kill the GUI's browser process. The login window still
-	// follows the system proxy through the tunnel when connected.
+	// pin the main window webview to a direct connection: applying the system
+// proxy must not kill the GUI process.
 	_ = os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
 		"--proxy-server=direct:// --proxy-bypass-list=<-loopback>")
 

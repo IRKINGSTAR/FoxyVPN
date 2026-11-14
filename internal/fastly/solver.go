@@ -1,6 +1,5 @@
-// Package fastly is a port of FastlyChallengeSolver.kt: it solves Fastly's
-// client challenges (proof-of-work, PAT, client metrics) that Mozilla's
-// control plane serves as HTTP 406, and installs the resulting cookies.
+// Solves Fastly client challenges (pow / pat / client metrics) served as
+// HTTP 406 by the Mozilla control plane, and installs the cookies.
 package fastly
 
 import (
@@ -49,8 +48,8 @@ var mozillaHosts = []string{
 	"vpn.mozilla.org",
 }
 
-// SolveAndInstall ports solveAndInstall(). If challengedBody is a challenge
-// page it is solved directly; otherwise the known hosts are probed.
+// SolveAndInstall: solve the body directly when it is a challenge page,
+// otherwise probe the known hosts.
 func SolveAndInstall(challengedBody, challengedOrigin, userAgent string) error {
 	solverMu.Lock()
 	defer solverMu.Unlock()
@@ -201,7 +200,7 @@ func isChallengePage(text string) bool {
 			strings.Contains(text, "fst-post-back"))
 }
 
-// parseChallengeInit ports the JSON-tolerant parser for init([challenges], "token" [, "prefix"]).
+// parseChallengeInit reads init([challenges], "token" [, "prefix"]).
 func parseChallengeInit(script, prefix string) ([]map[string]any, string, error) {
 	matches := initCallRe.FindAllStringIndex(script, -1)
 	var legacyCh []map[string]any

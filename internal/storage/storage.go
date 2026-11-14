@@ -1,6 +1,5 @@
-// Package storage persists credentials (tokens + proxy secrets) using Windows
-// DPAPI (user-scoped, no transfer between machines). It replaces the Android
-// SecurePreferences/TokenStore pair.
+// Persists credentials (tokens, proxy secrets) with Windows DPAPI,
+// scoped to the current user.
 package storage
 
 import (
@@ -100,7 +99,7 @@ func (c *CredentialsStore) Save(mutate func(*Credentials)) error {
 	return protectFile("credentials.bin", raw)
 }
 
-// ---- TokenStore (port of TokenStore.kt) ----
+// ---- TokenStore ----
 
 type tokenFile struct {
 	Auth     *model.RuntimeAuth `json:"auth,omitempty"`

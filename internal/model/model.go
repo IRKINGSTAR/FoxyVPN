@@ -1,4 +1,4 @@
-// Package model is a port of com.vauth.foxyvpn.data.model.Models.kt.
+// Shared data types.
 package model
 
 import "fmt"
@@ -127,7 +127,7 @@ func equalFold(a, b string) bool {
 	return true
 }
 
-// TunnelHealth mirrors the Android enum.
+// Tunnel health states.
 type TunnelHealth int
 
 const (

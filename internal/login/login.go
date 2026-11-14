@@ -1,5 +1,4 @@
-// Package login implements the Firefox Accounts login window using WebView2,
-// a port of the Android BrowserLoginScreen WebChannel flow.
+// FxA login window on WebView2 (WebChannel flow).
 package login
 
 import (
@@ -19,9 +18,8 @@ const cmdFxaStatus = "fxaccounts:fxa_status"
 const cmdCanLinkAccount = "fxaccounts:can_link_account"
 const cmdLogin = "fxaccounts:login"
 
-// webchannelHookJS is the port of WEBCHANNEL_HOOK_JS. It forwards
-// WebChannelMessageToChrome events into window.foxyWebChannel, which is
-// provided by the host via Bind().
+// hook injected into the login page: forwards WebChannelMessageToChrome
+// events to window.foxyWebChannel (provided via Bind).
 const webchannelHookJS = `
 (function() {
   if (window.__foxyChannelHooked) return;
@@ -62,9 +60,7 @@ type Options struct {
 
 // Run opens the WebView2 login window and blocks until it closes.
 //
-// The whole message loop must stay on one OS thread — the Go scheduler would
-// otherwise migrate this goroutine and the window's message pump would stop
-// receiving input (frozen window, crashes on interaction).
+// the message loop must stay pinned to one OS thread
 func Run(opts Options) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
@@ -122,8 +118,7 @@ func Run(opts Options) {
 		lastToken = token
 		tokenMu.Unlock()
 		logx.Info(tag, "captured an FxA session token from the login page")
-		// Close the window right away; the token exchange continues in the
-		// background (mirrors the Android flow where the WebView goes away).
+		// close the window now; the exchange continues in the background
 		closeWindow()
 		if opts.OnSessionToken != nil {
 			// Must stay fast and synchronous: we are on the UI thread inside
@@ -132,15 +127,12 @@ func Run(opts Options) {
 		}
 	}
 
-	// WebChannel replies must be queued onto the message loop — calling
-	// Eval synchronously inside WebMessageReceived re-enters the WebView2
-	// COM event handler and can crash the process.
+	// replies must be queued; Eval inside the COM handler would re-enter it
 	eval := func(script string) {
 		w.Dispatch(func() { w.Eval(script) })
 	}
 
-	// window.foxyWebChannel(payload, href) — provided by Bind. Any panic in
-	// this callback would take down the whole process, so guard it.
+	// window.foxyWebChannel is provided via Bind; guard against panics
 	_ = w.Bind("foxyWebChannel", func(payload string, href string) {
 		defer func() {
 			if r := recover(); r != nil {

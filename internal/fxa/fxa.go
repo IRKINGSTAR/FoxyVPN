@@ -1,6 +1,5 @@
-// Package fxa is a port of FxaAuthRepository.kt: the Firefox Accounts
-// protocol (HAWK-authenticated session token exchange, OAuth PKCE, token
-// refresh) including Fastly 406 challenge handling.
+// Firefox Accounts auth: session token to OAuth exchange (HAWK, PKCE),
+// token refresh, and Fastly 406 handling.
 package fxa
 
 import (
@@ -52,7 +51,7 @@ const friendly406 = "Mozilla's bot protection rejected this request (HTTP 406) a
 
 var sessionTokenHexRe = regexp.MustCompile(`^[0-9a-f]{64}$`)
 
-// APIError is a structured FxA error (port of FxaApiError).
+// APIError is a structured FxA error.
 type APIError struct {
 	Message    string
 	Errno      *int
@@ -99,7 +98,7 @@ func cleanToken(s string) string {
 	return strings.ToLower(s)
 }
 
-// Repository ports FxaAuthRepository.
+// Repository manages the FxA session and OAuth tokens.
 type Repository struct {
 	tokens      *storage.TokenStore
 	loginMu     sync.Mutex
@@ -128,7 +127,7 @@ func CleanSessionToken(s string) (string, bool) {
 	return c, true
 }
 
-// ---- HAWK (port of hawkHeader / deriveHawkCredentials) ----
+// ---- HAWK ----
 
 func hkdf(ikm []byte, info string, length int) []byte {
 	salt := make([]byte, 32)
@@ -215,7 +214,7 @@ func applyFirefoxHeaders(req *http.Request) {
 
 // ---- session verification ----
 
-// IsSessionVerified ports isSessionVerified().
+// IsSessionVerified checks the recovery email status via HAWK.
 func (r *Repository) IsSessionVerified(sessionToken string) bool {
 	clean := cleanToken(sessionToken)
 	if !sessionTokenHexRe.MatchString(clean) {
@@ -250,7 +249,7 @@ func (r *Repository) IsSessionVerified(sessionToken string) bool {
 	return status.Verified
 }
 
-// ---- login completion (port of completeBrowserLogin / completeLogin) ----
+// ---- login completion ----
 
 // CompleteBrowserLogin exchanges a captured WebChannel session token for
 // OAuth tokens and stores them. Returns error on failure.
@@ -551,7 +550,7 @@ func (r *Repository) RefreshAccessToken() *model.RuntimeAuth {
 	return &auth
 }
 
-// RestoreSession ports restoreSessionInternal.
+// RestoreSession returns ACTIVE, NEEDS_LOGIN or UNREACHABLE.
 func (r *Repository) RestoreSession() string {
 	epoch := r.tokens.SessionEpoch()
 	stored, err := r.tokens.LoadAuth()

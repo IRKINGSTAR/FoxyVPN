@@ -1,5 +1,4 @@
-// Package serverlist is a port of ServerListClient.kt: fetches and parses the
-// Mozilla VPN server directory from Remote Settings with a local cache.
+// Mozilla VPN server directory from Remote Settings, with local cache.
 package serverlist
 
 import (
@@ -260,7 +259,7 @@ func parseCity(raw json.RawMessage) model.City {
 	return city
 }
 
-// DefaultConnectTarget ports defaultConnectTarget.
+// DefaultConnectTarget picks the connect host/port for a server node.
 func DefaultConnectTarget(server model.ServerNode) (string, int, bool) {
 	for _, proto := range server.Protocols {
 		if proto.Name == "connect" {
@@ -285,7 +284,7 @@ func DefaultConnectTarget(server model.ServerNode) (string, int, bool) {
 	return "", 0, false
 }
 
-// CandidatesForCountry ports candidatesForCountry.
+// CandidatesForCountry lists connect candidates for a country.
 func CandidatesForCountry(countries []model.Country, countryCode string) []model.ProxyCandidate {
 	var out []model.ProxyCandidate
 	for _, country := range countries {
@@ -314,7 +313,7 @@ func CandidatesForCountry(countries []model.Country, countryCode string) []model
 	return out
 }
 
-// CandidatesForCity filters by city.
+// CandidatesForCity filters candidates by city.
 func CandidatesForCity(countries []model.Country, countryCode, cityCode string) []model.ProxyCandidate {
 	var out []model.ProxyCandidate
 	for _, c := range CandidatesForCountry(countries, countryCode) {
@@ -325,7 +324,7 @@ func CandidatesForCity(countries []model.Country, countryCode, cityCode string) 
 	return out
 }
 
-// PreferredConnectionCandidates ports preferredConnectionCandidates.
+// PreferredConnectionCandidates filters candidates for the saved region.
 func PreferredConnectionCandidates(candidates []model.ProxyCandidate, saved *model.ProxyCandidate) []model.ProxyCandidate {
 	if saved == nil {
 		var recommended []model.ProxyCandidate

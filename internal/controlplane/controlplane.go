@@ -1,8 +1,6 @@
-// Package controlplane is the Windows port of ControlPlaneHttp.kt: the shared
-// HTTPS client used for all Mozilla endpoints, with a uTLS Firefox fingerprint
-// (Fastly rejects stock Go TLS), a shared cookie jar, pre-seeded DoH
-// bootstrap resolution, and optional binding of sockets to the physical
-// interface so control traffic never loops through our own TUN.
+// Shared HTTPS client for the Mozilla endpoints: uTLS Firefox fingerprint,
+// shared cookies, DoH bootstrap, and socket binding to the physical
+// interface.
 package controlplane
 
 import (
@@ -27,7 +25,7 @@ import (
 	"foxyvpn/internal/settings"
 )
 
-// ---- Cookie jar (port of SimpleCookieJar) ----
+// ---- cookie jar ----
 
 type CookieJar struct {
 	mu      sync.Mutex
@@ -78,7 +76,7 @@ func (j *CookieJar) Cookies(u *url.URL) []*http.Cookie {
 	return out
 }
 
-// SnapshotAll returns every stored cookie (port of snapshotAll).
+// SnapshotAll returns every stored cookie.
 func (j *CookieJar) SnapshotAll() []*http.Cookie {
 	j.mu.Lock()
 	defer j.mu.Unlock()
@@ -92,8 +90,7 @@ func (j *CookieJar) SnapshotAll() []*http.Cookie {
 	return out
 }
 
-// InstallForced installs a cookie for a specific host and also mirrors it to
-// the other Mozilla control-plane hosts (port of installChallengeCookies).
+// InstallForced installs a cookie on the given hosts.
 func (j *CookieJar) InstallForced(cookie http.Cookie, hosts []string) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
@@ -115,7 +112,7 @@ func (j *CookieJar) Clear() {
 	j.cookies = map[string]map[string]http.Cookie{}
 }
 
-// ---- Physical-interface binding (Windows VpnService.protect equivalent) ----
+// ---- physical interface binding ----
 
 var (
 	bindMu        sync.Mutex
@@ -224,7 +221,7 @@ func bestInterface6(target string) uint32 {
 	return 0
 }
 
-// ---- DoH bootstrap resolver (port of getOrCreateDoh pre-seeded hosts) ----
+// ---- DoH bootstrap resolver ----
 
 var preSeeded = map[string][]string{
 	"dns.google":          {"8.8.8.8", "8.8.4.4"},
@@ -308,7 +305,7 @@ var (
 // the fingerprint's native ALPN (h2 + http/1.1). Since November 2026 the
 // Fastly edge in front of Mozilla endpoints rejects stock Go TLS ClientHellos
 // with HTTP 406 / EOF, and rejects Firefox-looking hellos that offer only
-// http/1.1 — exactly as documented by the reference Go client.
+// http/1.1 (see the reference Go client)
 func dialFirefoxTLS(ctx context.Context, network, addr string) (net.Conn, error) {
 	rawDial := &net.Dialer{Timeout: 15 * time.Second, Control: applyBindControl}
 	conn, err := rawDial.DialContext(ctx, network, addr)
@@ -364,8 +361,7 @@ func Client() *http.Client {
 	return shared
 }
 
-// NoRedirectClient is the FxA-style client that never follows redirects
-// (port of FxaAuthRepository's client).
+// NoRedirectClient is the FxA-style client that never follows redirects.
 func NoRedirectClient() *http.Client {
 	Client()
 	return noRedirect

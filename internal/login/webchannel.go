@@ -26,13 +26,13 @@ func endsWith(s, suffix string) bool {
 	return strings.HasSuffix(s, suffix)
 }
 
-// bridgePayload mirrors {foxy: "<envelope json>", href: "..."}.
+// raw postMessage payload.
 type bridgePayload struct {
 	Foxy string `json:"foxy"`
 	Href string `json:"href"`
 }
 
-// envelope mirrors the WebChannel message envelope.
+// WebChannel message envelope.
 type envelope struct {
 	ID      string `json:"id"`
 	Message struct {
