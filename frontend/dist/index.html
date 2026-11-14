@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FoxyVPN</title>
+<link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="dark">
+<div id="app">
+  <div class="bg" aria-hidden="true">
+    <div class="bg-glow bg-glow-a"></div>
+    <div class="bg-glow bg-glow-b"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+  </div>
+
+  <!-- ===== Login gate ===== -->
+  <section id="view-login" class="view auth-view">
+    <div class="auth-card">
+      <div class="auth-hero">
+        <div class="logo-orb">
+          <svg class="logo" viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+            <defs>
+              <linearGradient id="foxGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FFB25E"/><stop offset="1" stop-color="#F58230"/>
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="30" fill="url(#foxGrad)"/>
+            <path d="M32 17 v13" stroke="#141824" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M21.5 23.5 a15.5 15.5 0 1 0 21 0" fill="none" stroke="#141824" stroke-width="4.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1>FoxyVPN</h1>
+        <p class="muted" data-i18n="loginSubtitle">برای اتصال به سرویس Mozilla VPN، با حساب فایرفاکس خود وارد شوید</p>
+      </div>
+      <button id="btn-login" class="btn primary big">
+        <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+        <span data-i18n="signIn">ورود با حساب فایرفاکس</span>
+      </button>
+      <div id="login-error" class="error hidden"></div>
+      <div id="login-progress" class="progress-line muted hidden">
+        <span class="spinner" aria-hidden="true"></span>
+        <span data-i18n="loginProgress">در حال تکمیل ورود… پنجره مرورگر را دنبال کنید</span>
+      </div>
+    </div>
+    <div class="auth-footer">
+      <button id="btn-lang-login" class="btn ghost small">EN</button>
+    </div>
+  </section>
+
+  <!-- ===== Main app ===== -->
+  <main id="view-main" class="hidden">
+    <header class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="url(#foxGrad)"/>
+          <path d="M32 17 v13" stroke="#141824" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M21.5 23.5 a15.5 15.5 0 1 0 21 0" fill="none" stroke="#141824" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+        <b>FoxyVPN</b>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-theme" class="icon-btn" aria-label="theme">
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+        <button id="btn-lang" class="icon-btn lang-btn" aria-label="language">EN</button>
+      </div>
+    </header>
+
+    <!-- Home -->
+    <section id="view-home" class="view">
+      <div class="mode-switch" role="tablist">
+        <span class="mode-thumb" aria-hidden="true"></span>
+        <button id="mode-tunnel" class="mode-chip active" data-mode="tunnel" data-i18n="modeTunnel">تانل VPN</button>
+        <button id="mode-proxy" class="mode-chip" data-mode="proxy" data-i18n="modeProxy">فقط پروکسی</button>
+      </div>
+
+      <div class="ring-wrap">
+        <button id="btn-connect" class="ring" aria-label="connect">
+          <span class="ring-halo" aria-hidden="true"></span>
+          <span class="ring-inner" aria-hidden="true"></span>
+          <svg class="ring-power" viewBox="0 0 64 64" width="54" height="54" aria-hidden="true">
+            <path d="M32 14 v14" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+            <path d="M21 21 a16 16 0 1 0 22 0" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="status-block">
+          <div class="status-row">
+            <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+            <div id="home-status" class="status-line">قطع</div>
+          </div>
+          <button id="region-card" class="region-line" aria-label="region">
+            <span id="region-current">—</span>
+            <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="m9 6 6 6-6 6z"/></svg>
+          </button>
+          <div class="chip-row">
+            <span id="home-ping" class="chip mono">— ms</span>
+            <span id="home-health" class="chip"></span>
+          </div>
+        </div>
+        <div id="home-error" class="error hidden"></div>
+      </div>
+
+      <div class="cards">
+        <div class="card stat-strip">
+          <div class="stat-cell"><div class="stat-num mono" id="home-ping2">—</div><div class="card-label" data-i18n="latency">تأخیر</div></div>
+          <div class="stat-div"></div>
+          <div class="stat-cell speed-cell"><div class="stat-num mono" id="home-speed">—</div><div class="card-label" data-i18n="speed">سرعت</div></div>
+          <div class="stat-div"></div>
+          <div class="stat-cell"><div class="stat-num mono" id="home-bytes">—</div><div class="card-label" data-i18n="dataUsed">حجم نشست</div></div>
+        </div>
+
+        <div class="card" id="usage-card" role="button" title="refresh quota">
+          <div class="usage-head">
+            <span class="card-label" data-i18n="usage">مصرف و سهمیه ماهانه</span>
+            <button id="btn-refresh-quota" class="icon-btn tiny" aria-label="refresh quota">
+              <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            </button>
+          </div>
+          <div class="quota-bar"><div id="quota-fill"></div></div>
+          <div class="card-value small" id="home-quota">—</div>
+        </div>
+
+        <div class="card list-card">
+          <div class="list-row">
+            <div class="list-label" data-i18n="exitIp">IP خروجی</div>
+            <div class="list-value mono" id="home-exitip">—</div>
+          </div>
+          <div class="list-sep"></div>
+          <div class="list-row">
+            <div class="list-label"><span data-i18n="realIp">IP واقعی شما</span>
+              <button id="btn-refresh-realip" class="icon-btn tiny" aria-label="refresh ip">
+                <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+              </button>
+            </div>
+            <div class="list-value mono" id="home-realip">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Regions -->
+    <section id="view-regions" class="view hidden">
+      <input id="region-search" class="input" type="search" data-i18n-ph="searchRegion" placeholder="جستجوی کشور یا شهر…" />
+      <div id="regions-list" class="regions-list"></div>
+      <button id="btn-regions-retry" class="btn ghost small hidden" data-i18n="retry">تلاش دوباره</button>
+    </section>
+
+    <!-- Settings -->
+    <section id="view-settings" class="view hidden">
+      <div id="settings-body"></div>
+      <div class="settings-footer">
+        <button id="btn-signout" class="btn danger ghost" data-i18n="signOut">خروج از حساب</button>
+        <div class="version mono" id="app-version"></div>
+      </div>
+    </section>
+
+    <!-- Logs -->
+    <section id="view-logs" class="view hidden">
+      <div class="logs-toolbar">
+        <select id="logs-filter" class="input narrow">
+          <option value="" data-i18n="all">همه</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+        </select>
+        <div class="spacer"></div>
+        <button id="btn-copy-logs" class="btn ghost small" data-i18n="copy">کپی</button>
+        <button id="btn-clear-logs" class="btn ghost small" data-i18n="clear">پاک کردن</button>
+      </div>
+      <div id="logs-list" class="logs-list mono"></div>
+    </section>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="home">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" x2="12" y1="2" y2="11"/></svg>
+        <span data-i18n="navHome">خانه</span>
+      </button>
+      <button class="nav-btn" data-view="regions">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        <span data-i18n="navRegions">ریجن‌ها</span>
+      </button>
+      <button class="nav-btn" data-view="settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.74v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span data-i18n="navSettings">تنظیمات</span>
+      </button>
+      <button class="nav-btn" data-view="logs">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+        <span data-i18n="navLogs">لاگ‌ها</span>
+      </button>
+    </nav>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

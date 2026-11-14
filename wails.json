@@ -1,0 +1,18 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "FoxyVPN",
+  "outputfilename": "FoxyVPN",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "FoxyVPN"
+  },
+  "info": {
+    "productName": "FoxyVPN",
+    "productVersion": "2.0.2",
+    "copyright": "MIT",
+    "comments": "Unofficial Mozilla VPN client for Windows"
+  }
+}
